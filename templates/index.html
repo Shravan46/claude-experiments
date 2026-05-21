@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DXM — Production Risk Monitor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #0d1b2a;
+      border-bottom: 1px solid #1e3a5f;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-brand { display: flex; align-items: center; gap: 1rem; }
+    .header-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #1a6eb5, #0ea5e9);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 800; color: #fff;
+    }
+    .header-title { font-size: 1.2rem; font-weight: 700; color: #f0f6ff; letter-spacing: -0.02em; }
+    .header-subtitle { font-size: 0.78rem; color: #64748b; margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .last-updated { font-size: 0.75rem; color: #475569; }
+    .last-updated span { color: #94a3b8; }
+
+    /* ── Refresh button ── */
+    #refresh-btn {
+      background: #1a6eb5;
+      color: #fff;
+      border: none;
+      padding: 0.45rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 0.5rem;
+      transition: background 0.15s;
+    }
+    #refresh-btn:hover { background: #1557a0; }
+    #refresh-btn:disabled { background: #1e3a5f; color: #475569; cursor: not-allowed; }
+    #refresh-btn .btn-icon { font-size: 0.9rem; }
+
+    /* ── Main content ── */
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    /* ── Summary bar ── */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .summary-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 1.1rem 1.4rem;
+    }
+    .summary-card .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 0.4rem; }
+    .summary-card .value { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .summary-card.total .value  { color: #e2e8f0; }
+    .summary-card.high .value   { color: #ef4444; }
+    .summary-card.medium .value { color: #f59e0b; }
+    .summary-card.low .value    { color: #22c55e; }
+
+    /* ── Loading state ── */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      padding: 5rem 0;
+      color: #475569;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #1f2937;
+      border-top-color: #1a6eb5;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 0.9rem; }
+
+    /* ── Error state ── */
+    #error-state {
+      display: none;
+      background: #1c0a0a;
+      border: 1px solid #7f1d1d;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      color: #fca5a5;
+    }
+    #error-state .error-title { font-weight: 600; margin-bottom: 0.4rem; }
+    #error-state .error-msg   { font-size: 0.85rem; color: #f87171; font-family: monospace; }
+
+    /* ── Nominal state ── */
+    #nominal-state {
+      display: none;
+      background: #052e16;
+      border: 1px solid #14532d;
+      border-radius: 10px;
+      padding: 2.5rem;
+      text-align: center;
+      color: #22c55e;
+    }
+    #nominal-state .nominal-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+    #nominal-state .nominal-title { font-size: 1.2rem; font-weight: 700; }
+    #nominal-state .nominal-sub   { font-size: 0.85rem; color: #4ade80; margin-top: 0.4rem; }
+
+    /* ── Orders grid ── */
+    #orders-grid { display: grid; gap: 1rem; }
+
+    /* ── Order card ── */
+    .order-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 1.4rem 1.6rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      transition: border-color 0.15s;
+    }
+    .order-card:hover { border-color: #374151; }
+    .order-card.risk-HIGH   { border-left: 4px solid #ef4444; }
+    .order-card.risk-MEDIUM { border-left: 4px solid #f59e0b; }
+    .order-card.risk-LOW    { border-left: 4px solid #22c55e; }
+
+    .card-main { min-width: 0; }
+    .card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.7rem; flex-wrap: wrap; }
+
+    .order-id { font-size: 0.78rem; font-weight: 600; color: #64748b; font-family: monospace; }
+    .product-name { font-size: 1.05rem; font-weight: 700; color: #f0f6ff; }
+
+    /* badges */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .badge-risk-HIGH   { background: #3f0a0a; color: #ef4444; border: 1px solid #7f1d1d; }
+    .badge-risk-MEDIUM { background: #2d1a00; color: #f59e0b; border: 1px solid #78350f; }
+    .badge-risk-LOW    { background: #052e16; color: #22c55e; border: 1px solid #14532d; }
+
+    .badge-driver {
+      background: #1e293b; color: #94a3b8; border: 1px solid #334155;
+    }
+    .badge-driver.machine   { color: #60a5fa; }
+    .badge-driver.inventory { color: #a78bfa; }
+    .badge-driver.workforce { color: #34d399; }
+    .badge-driver.combined  { color: #fb923c; }
+
+    /* action text */
+    .action-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: #4b5563; margin-bottom: 0.25rem; margin-top: 0.8rem; }
+    .action-text  { font-size: 0.875rem; color: #cbd5e1; line-height: 1.55; }
+
+    /* right column */
+    .card-meta {
+      display: flex; flex-direction: column; align-items: flex-end;
+      justify-content: flex-start; gap: 0.9rem; min-width: 120px;
+    }
+    .meta-block { text-align: right; }
+    .meta-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; color: #4b5563; margin-bottom: 0.2rem; }
+    .meta-value { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+    .meta-value.hours { color: #e2e8f0; }
+    .meta-unit  { font-size: 0.7rem; color: #6b7280; margin-top: 0.1rem; }
+
+    .confidence-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 0.3rem;
+    }
+    .conf-high   .confidence-dot { background: #22c55e; }
+    .conf-medium .confidence-dot { background: #f59e0b; }
+    .conf-low    .confidence-dot { background: #6b7280; }
+    .conf-label  { font-size: 0.8rem; color: #94a3b8; }
+
+    @media (max-width: 640px) {
+      .summary-bar { grid-template-columns: repeat(2, 1fr); }
+      .order-card  { grid-template-columns: 1fr; }
+      .card-meta   { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div class="header-logo">DX</div>
+    <div>
+      <div class="header-title">DXM</div>
+      <div class="header-subtitle">AI-Powered Production Risk Monitor</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="last-updated" id="timestamp-label">Last updated: <span id="timestamp-value">—</span></div>
+    <button id="refresh-btn" onclick="refresh()">
+      <span class="btn-icon">↻</span> Refresh
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Summary bar -->
+  <div class="summary-bar">
+    <div class="summary-card total">
+      <div class="label">Orders Analyzed</div>
+      <div class="value" id="count-total">—</div>
+    </div>
+    <div class="summary-card high">
+      <div class="label">High Risk</div>
+      <div class="value" id="count-high">—</div>
+    </div>
+    <div class="summary-card medium">
+      <div class="label">Medium Risk</div>
+      <div class="value" id="count-medium">—</div>
+    </div>
+    <div class="summary-card low">
+      <div class="label">Low Risk</div>
+      <div class="value" id="count-low">—</div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Running AI risk analysis via MES agent…</div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-state">
+    <div class="error-title">Analysis failed</div>
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+
+  <!-- Nominal (no risks) -->
+  <div id="nominal-state">
+    <div class="nominal-icon">✓</div>
+    <div class="nominal-title">All systems nominal</div>
+    <div class="nominal-sub">No at-risk production orders detected at this time.</div>
+  </div>
+
+  <!-- Orders -->
+  <div id="orders-grid"></div>
+
+</main>
+
+<script>
+  const DRIVER_COLORS = { machine: 'machine', inventory: 'inventory', workforce: 'workforce', combined: 'combined' };
+
+  function fmtTimestamp(iso) {
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function buildCard(order) {
+    const risk     = order.risk_level   || '?';
+    const driver   = order.primary_driver || '';
+    const conf     = (order.confidence  || 'medium').toLowerCase();
+    const hours    = order.time_to_impact != null ? order.time_to_impact : '?';
+
+    return `
+      <div class="order-card risk-${risk}">
+        <div class="card-main">
+          <div class="card-header">
+            <span class="order-id">${order.order_id || ''}</span>
+            <span class="product-name">${order.product_name || ''}</span>
+            <span class="badge badge-risk-${risk}">${risk}</span>
+            <span class="badge badge-driver ${DRIVER_COLORS[driver] || ''}">${driver}</span>
+          </div>
+          <div class="action-label">Recommended Action</div>
+          <div class="action-text">${order.recommended_action || ''}</div>
+        </div>
+        <div class="card-meta">
+          <div class="meta-block">
+            <div class="meta-label">Time to Impact</div>
+            <div class="meta-value hours">${hours}</div>
+            <div class="meta-unit">hours</div>
+          </div>
+          <div class="meta-block">
+            <div class="meta-label">Confidence</div>
+            <div class="conf-${conf}">
+              <span class="confidence-dot"></span>
+              <span class="conf-label">${conf}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderOrders(orders) {
+    const grid = document.getElementById('orders-grid');
+    if (!orders || orders.length === 0) {
+      grid.innerHTML = '';
+      document.getElementById('nominal-state').style.display = 'block';
+      return;
+    }
+    document.getElementById('nominal-state').style.display = 'none';
+    grid.innerHTML = orders.map(buildCard).join('');
+  }
+
+  function updateSummary(orders) {
+    const counts = { total: orders.length, HIGH: 0, MEDIUM: 0, LOW: 0 };
+    orders.forEach(o => { if (counts[o.risk_level] !== undefined) counts[o.risk_level]++; });
+    document.getElementById('count-total').textContent  = counts.total;
+    document.getElementById('count-high').textContent   = counts.HIGH;
+    document.getElementById('count-medium').textContent = counts.MEDIUM;
+    document.getElementById('count-low').textContent    = counts.LOW;
+  }
+
+  function setLoading(on) {
+    document.getElementById('loading').style.display   = on ? 'flex' : 'none';
+    document.getElementById('refresh-btn').disabled    = on;
+    if (on) {
+      document.getElementById('error-state').style.display  = 'none';
+      document.getElementById('nominal-state').style.display = 'none';
+      document.getElementById('orders-grid').innerHTML = '';
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('error-state').style.display = 'block';
+    document.getElementById('error-msg').textContent = msg;
+  }
+
+  async function load(endpoint) {
+    setLoading(true);
+    try {
+      const method = endpoint === '/api/refresh' ? 'POST' : 'GET';
+      const res  = await fetch(endpoint, { method });
+      const data = await res.json();
+      setLoading(false);
+      if (!data.success) { showError(data.error || 'Unknown error'); return; }
+      document.getElementById('timestamp-value').textContent = fmtTimestamp(data.timestamp);
+      updateSummary(data.orders);
+      renderOrders(data.orders);
+    } catch (err) {
+      setLoading(false);
+      showError(err.message);
+    }
+  }
+
+  function refresh() { load('/api/refresh'); }
+
+  // Auto-load on page open
+  load('/api/analyze');
+</script>
+
+</body>
+</html>
