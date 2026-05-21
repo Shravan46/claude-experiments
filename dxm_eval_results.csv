@@ -1,0 +1,542 @@
+run_timestamp,test_id,category,description,score,verdict,judge_rationale,model_response
+2026-05-20 18:37:42,HP-001,happy_path,"Machine down, single order — obvious high-severity risk",1.0,PASS,"The AI correctly identifies PO-4821 as at-risk, cites machine as the primary driver, assigns high severity, and provides an accurate quantitative rationale matching the expected output. No hallucinated risks for other orders.","## MES Risk Analysis — 2026-05-20 14:32
+
+---
+
+### AT-RISK ORDERS IDENTIFIED: 1
+
+---
+
+#### 🔴 PO-4821 — Gear Housing Assembly
+| Field | Detail |
+|---|---|
+| **Due Date** | 2026-05-20 20:00 |
+| **Current Operation** | CNC Machining (Op 30) on CNC-07 |
+| **Remaining Runtime** | 3.2 hrs |
+| **Time to Due Date** | ~5.5 hrs |
+
+**Primary Risk Driver:** Machine
+
+**Secondary Risk Driver:** None
+
+**Severity:** HIGH
+
+**Rationale:** CNC-07 has been down since 13:45 with a spindle motor overload fault (E-044) and an estimated repair window of 3–4 hours; even at the optimistic end of that estimate, the machine would not be released until approximately 17:45, leaving only ~2.15 hours before the 20:00 due date against a 3.2-hour remaining operation, making on-time completion infeasible without immediate intervention.
+
+---
+
+### CONTRIBUTING FACTORS RULED OUT
+
+| Factor | Assessment |
+|---|---|
+| **Inventory** | ✅ No risk — all BOM components on-hand and allocated |
+| **Workforce** | ✅ No risk — Shift 2 fully staffed (9/9 CNC operators present) |
+
+---
+
+### ⚠️ RECOMMENDED IMMEDIATE ACTIONS
+
+1. **Check alternate machine availability** — Determine if a qualified CNC machine (compatible tooling, program, and fixturing) can be re-routed to absorb Op 30 for PO-4821 within the remaining window.
+2. **Escalate repair priority** — If rerouting is not feasible, escalate E-044 fault to maintenance leadership to pursue the lower bound of the 3-hour repair estimate.
+3. **Notify scheduling/customer liaison** — Given that on-time delivery is already at significant risk, proactive communication regarding potential delay is advisable.
+4. **Do not flag workforce for reallocation** — Operators are available and not the constraint; resolution depends entirely on machine capacity recovery.
+
+---
+
+*Analysis based solely on data present in MES snapshot. No additional risk conditions inferred.*"
+2026-05-20 18:37:42,HP-002,happy_path,Inventory stockout — component exhausted before order completes,1.0,PASS,"The AI correctly flags PO-7712 as at-risk, identifies inventory as the primary driver, assigns high severity, and provides accurate supporting calculations consistent with the expected output (47 units at 120/hr ≈ 23-24 min runtime, order needs 500 units, due in ~7 hrs).","## MES Risk Analysis — 2026-05-20 09:15
+
+---
+
+### ⚠️ AT-RISK ORDERS IDENTIFIED: 1
+
+---
+
+#### PO-7712 — Hydraulic Valve Body
+| Field | Detail |
+|---|---|
+| **Due Date** | 2026-05-20 16:00 |
+| **Primary Risk Driver** | **Inventory** |
+| **Secondary Risk Driver** | None |
+| **Severity** | 🔴 HIGH |
+
+**Rationale:** Only 47 units of Seal Kit A-104 are on hand against a requirement of 500 units, with no pending receipt, meaning the component shortfall of **453 units** will halt sub-assembly within approximately **24 minutes** at the current consumption rate of 120 units/hr — making it impossible to complete the order by 16:00 without immediate emergency procurement or material reallocation.
+
+---
+
+### Supporting Calculation
+| Parameter | Value |
+|---|---|
+| On-hand allocated inventory | 47 units |
+| Consumption rate | 120 units/hr |
+| **Time to stockout** | **~24 minutes** (≈ 09:39) |
+| Units still required after stockout | 453 units |
+| Time remaining to due date at stockout | ~6 hrs 21 min |
+| Time needed to complete remaining qty | ~3 hrs 46 min |
+| **Recovery window (if supply restored):** | Tight, but technically feasible if Seal Kit A-104 is sourced by approximately **12:14** |
+
+---
+
+### Recommended Immediate Actions
+1. **Escalate to procurement** for emergency sourcing or inter-facility transfer of Seal Kit A-104 (453 units minimum).
+2. **Alert production supervisor** to prepare for an imminent line stoppage on Assembly Line 2.
+3. **Do not reassign assemblers** — Shift 1 workforce is fully staffed and ready to resume immediately upon material restoration.
+
+---
+
+> *Machine and workforce conditions are nominal and do not contribute to the current risk profile. No other active production orders are present in this snapshot.*"
+2026-05-20 18:37:42,HP-003,happy_path,Workforce gap — certified welders called out for next shift,1.0,PASS,"The AI correctly flags PO-3344 as at-risk, identifies workforce as the primary driver, and assigns high severity — matching all criteria for full credit. The rationale is accurate and well-supported by the MES data.","## MES Risk Analysis — 2026-05-20 13:50
+
+---
+
+### ⚠️ AT-RISK ORDERS: 1 IDENTIFIED
+
+---
+
+#### PO-3344 | Structural Weldment W-220
+| Field | Detail |
+|---|---|
+| **Due Date** | 2026-05-20 23:00 |
+| **Status** | Queued |
+| **Next Operation** | MIG Welding (Op 10) |
+| **Severity** | 🔴 HIGH |
+| **Primary Risk Driver** | Workforce |
+| **Secondary Risk Driver** | None |
+
+**Rationale:** Two of three required AWS D1.1 certified welders called out sick at 13:30, leaving only one confirmed certified operator available at Shift 2 start — insufficient to staff the next operation as specified, and with the order due at 23:00 and shift beginning at 14:00, there is minimal time to source qualified replacements before the deadline is missed.
+
+---
+
+### Risk Driver Notes
+
+- **Machine:** Not a risk driver — Welding Bays 1–4 are fully operational at 88% OEE.
+- **Inventory:** Not a risk driver — all BOM components for PO-3344 are confirmed on-hand.
+- **Workforce:** Sole risk driver. The certification requirement (AWS D1.1) constrains substitution; not all available workers can be assigned regardless of headcount.
+
+---
+
+### ⚡ Recommended Immediate Actions *(for operator review)*
+1. Check whether any off-shift AWS D1.1 certified welders can be recalled or cross-assigned before 14:00.
+2. Confirm whether any on-site personnel hold AWS D1.1 certification but are not currently rostered to this shift.
+3. Escalate to production supervisor now — recovery window is approximately **10 minutes** to shift start."
+2026-05-20 18:37:42,HP-004,happy_path,"Three orders in snapshot — two at risk, one on track",1.0,PASS,"The AI correctly identifies both PO-1001 (inventory, high) and PO-2002 (machine, high) as at-risk orders, correctly identifies PO-3003 as not at risk, and provides accurate rationale for each classification matching all criteria in the scoring rubric.","# MES Risk Analysis — 2026-05-20 11:00
+
+---
+
+## ⚠️ AT-RISK PRODUCTION ORDERS
+
+---
+
+### 🔴 PO-1001 | Bearing Housing | Due: 2026-05-20 18:00
+| Field | Detail |
+|---|---|
+| **Primary Risk Driver** | Inventory |
+| **Secondary Risk Driver** | None |
+| **Severity** | **HIGH** |
+
+**Rationale:** BR-88 Bearing Race stock is critically short — only 8 units on hand against a requirement of 80, with no pending receipt — making it impossible to complete this order by 18:00 today regardless of machine or labor availability.
+
+---
+
+### 🔴 PO-2002 | Pump Impeller | Due: 2026-05-20 19:00
+| Field | Detail |
+|---|---|
+| **Primary Risk Driver** | Machine |
+| **Secondary Risk Driver** | None |
+| **Severity** | **HIGH** |
+
+**Rationale:** MILL-05 is down with a servo drive fault and an estimated repair window of 5–6 hours, meaning the machine will not be restored until 16:00–17:00 at the earliest, leaving insufficient time to complete the remaining 4.0 hours of milling before the 19:00 due date.
+
+---
+
+## ✅ ORDERS NOT AT RISK
+
+### PO-3003 | Shaft Assembly | Due: 2026-05-21 08:00
+GRD-01 is running at 94% OEE with 1.5 hours of work remaining, all components are on hand, and workforce is nominal. This order carries substantial time buffer (~19.5 hours) and presents no identified risk.
+
+---
+
+## Summary
+
+| Order | Severity | Primary Driver | Secondary Driver |
+|---|---|---|---|
+| PO-1001 | 🔴 High | Inventory | — |
+| PO-2002 | 🔴 High | Machine | — |
+| PO-3003 | ✅ None | — | — |
+
+**Recommended Immediate Actions:**
+- **PO-1001:** Escalate BR-88 sourcing — emergency procurement, interplant transfer, or customer notification required now.
+- **PO-2002:** Assess alternate milling capacity (e.g., MILL-04 or external subcontract); if no alternate is available, notify the customer of a probable delay."
+2026-05-20 18:37:42,HP-005,happy_path,OEE degradation trend — throughput math shows order cannot complete on time,1.0,PASS,"The AI correctly flags PO-5566, identifies machine (OEE degradation) as the primary driver, assigns high severity, and accurately quantifies the negligible buffer (~10 minutes) while noting the declining OEE trend as an additional compounding risk factor.","## MES Risk Analysis — 2026-05-20 15:20
+
+---
+
+### ⚠️ AT-RISK ORDERS: 1 IDENTIFIED
+
+---
+
+#### PO-5566 — Cam Follower Assembly
+
+| Field | Detail |
+|---|---|
+| **Due Date** | 2026-05-20 19:00 |
+| **Time Remaining to Due** | ~3 hrs 40 min |
+| **Estimated Completion at Current OEE** | ~3.5 hrs → ~18:50 *(marginal)* |
+| **Primary Risk Driver** | **Machine** |
+| **Secondary Risk Driver** | None |
+| **Severity** | **HIGH** |
+
+**Rationale:** BOR-03 is operating at 57% OEE against an 88% standard — extending the remaining operation from 2.0 hrs to an estimated 3.5 hrs — and with OEE actively declining over the past 90 minutes, the effective completion window is already near the 19:00 due date and will likely breach it if degradation continues.
+
+---
+
+### Recommended Immediate Actions
+
+1. **Investigate BOR-03 degradation** — Identify root cause of declining OEE (micro-stoppages, speed loss, quality escapes) and determine if inline recovery is feasible within the current shift.
+2. **Assess rerouting options** — Determine whether an alternate boring machine with available capacity can absorb Op 40 to recover schedule.
+3. **Alert production supervisor now** — The ~10-minute buffer at *current* OEE provides no meaningful contingency against further deterioration; escalation should not wait.
+
+---
+
+### ✅ All Other Orders: No additional at-risk orders identified in this snapshot."
+2026-05-20 18:37:42,EC-001,edge_case,"Two degraded signals, neither catastrophic — model must identify both drivers",0.5,PARTIAL,"The AI correctly flags PO-9901 and identifies both machine and inventory as contributing risk drivers (primary and secondary), satisfying that requirement. However, it assigns HIGH severity rather than the expected MEDIUM severity, which per the rubric caps the score at 0.5.","## MES Risk Analysis — 2026-05-20 10:45
+
+---
+
+### ⚠️ AT-RISK ORDERS IDENTIFIED: 1
+
+---
+
+#### PO-9901 | Actuator Housing | Due: 17:00 Today
+
+| Field | Detail |
+|---|---|
+| **Severity** | **HIGH** |
+| **Primary Risk Driver** | **Machine** |
+| **Secondary Risk Driver** | **Inventory** |
+
+**Machine Risk — Primary:**
+MILL-09 is running at 71% OEE against an 87% standard, producing an effective remaining time of ~3.4 hours for work that requires 2.8 hours at standard rate. This yields a projected Op 30 completion of approximately **14:09–14:15**, leaving roughly **2.75–2.85 hours** of buffer before the 17:00 due date. That buffer is narrow, and if OEE degrades further, Op 30 completion slips directly into the window needed for Op 40.
+
+**Inventory Risk — Secondary:**
+Component K-551 is short 110 units at present (210 on-hand vs. 320 required). The pending receipt of 150 units arrives at **16:30**, which satisfies the quantity requirement but leaves **only ~30 minutes** of operational time before due. Any receipt delay — carrier, receiving dock processing, incoming inspection — would make it physically impossible to complete Op 40 before 17:00.
+
+**Compounding concern:** These two risks interact. If Op 30 runs long due to continued OEE degradation, the start of Op 40 is pushed later, and the already-thin K-551 receipt buffer is consumed entirely. There is no independent recovery path if both risks materialize simultaneously.
+
+**Rationale:** MILL-09's degraded OEE is already projecting Op 30 to overrun standard by ~36 minutes, and the K-551 receipt arrives at 16:30 with zero tolerance for delay, leaving PO-9901 with no viable recovery window if either condition worsens.
+
+---
+
+### Recommended Immediate Actions
+
+1. **Machine:** Investigate MILL-09 OEE degradation now — identify whether this is a tooling, fixturing, or process parameter issue and intervene to recover throughput rate.
+2. **Inventory:** Contact the K-551 supplier/carrier for a confirmed delivery status update. Flag receiving dock to prioritize this receipt and expedite any incoming inspection upon arrival.
+3. **Escalation:** Notify production supervisor and logistics coordinator of the compounding risk. Consider alerting the customer of potential due date jeopardy if no corrective confirmation is obtained within the next 60–90 minutes."
+2026-05-20 18:37:42,EC-002,edge_case,"Machine down but significant float — severity should be low, not high",0.5,PARTIAL,"The AI correctly identifies PO-6677 as at-risk with machine as the primary driver, but assigns 'medium' severity instead of 'low'. The rubric explicitly states that failing to account for the ~12 hours of buffer and assigning medium or high severity caps the score at 0.5. The AI's rationale acknowledges meaningful remaining time but does not quantify the ~12 hours of float that justifies a low severity classification.","## MES Risk Analysis — 2026-05-20 08:05
+
+---
+
+### ⚠️ AT-RISK ORDERS: 1 IDENTIFIED
+
+---
+
+#### PO-6677 | Drill Press Table | Due: 2026-05-20 22:00
+
+| Attribute | Detail |
+|---|---|
+| **Severity** | **Medium** |
+| **Primary Risk Driver** | **Machine** |
+| **Secondary Risk Driver** | None |
+
+**Rationale:** Assigned machine DP-04 has been down since 07:50 with a coolant pump failure and an estimated repair window of 75–90 minutes, meaning the earliest DP-04 is available is approximately 09:05–09:20; this consumes recovery margin but the 45-minute work duration still leaves meaningful time before the 22:00 due date, provided repair does not extend beyond estimates.
+
+**Recovery Options to Consider:**
+- Monitor DP-04 repair closely — if resolution slips past the 90-minute estimate, severity should be escalated to **High**
+- Evaluate whether an alternate drilling-capable machine can be assigned to eliminate dependency on DP-04's repair timeline
+- No inventory or staffing interventions required — BOM components are on-hand and Shift 1 is fully staffed
+
+---
+
+### ✅ ALL OTHER ACTIVE ORDERS
+No additional production orders are present in this snapshot. No further risk flags apply.
+
+---
+
+*Analysis based exclusively on MES snapshot data as of 08:05. Reassess if DP-04 repair status changes.*"
+2026-05-20 18:37:42,EC-003,edge_case,Inventory nominally sufficient but historical reject rate creates real risk,1.0,PASS,"The AI correctly flags PO-8823 as at-risk with inventory as the primary driver, explicitly accounts for the 2.1% reject rate in its reasoning (calculating ~4.2 expected rejects leaving only ~197 conforming units against the 200-unit requirement), and assigns medium severity — fully satisfying all rubric criteria for full credit.","## MES Risk Analysis — 2026-05-20 12:30
+
+---
+
+### ⚠️ AT-RISK ORDERS IDENTIFIED: 1
+
+---
+
+#### PO-8823 | Hydraulic Cylinder | Due: 2026-05-21 06:00
+
+| Field | Assessment |
+|---|---|
+| **Primary Risk Driver** | Inventory |
+| **Secondary Risk Driver** | None |
+| **Severity** | Medium |
+
+**Rationale:** Only 201 units of O-Ring Gasket G-44 are allocated against a 200-unit order, but the historical quality reject rate of 2.1% produces an average of ~4.2 rejected units per run — meaning the available inventory is statistically insufficient to yield 200 conforming finished parts without a replenishment receipt, which is not currently scheduled.
+
+---
+
+### Supporting Detail
+
+- **Machine risk:** Not applicable — SS-01 is running at 89% OEE with no fault condition reported.
+- **Workforce risk:** Not applicable — Shift 2 is fully staffed.
+- **Inventory buffer math:** 201 units on hand minus an expected ~4 rejects leaves an expected yield of ~197 conforming units, falling short of the 200-unit requirement by approximately 3 units.
+
+---
+
+### Recommended Action
+
+Procure or transfer a minimum of **5–7 additional units** of G-44 (to account for variance above the average reject rate) before the sealing operation consumes the current allocated stock. Given the 17.5-hour window to due date, expedited sourcing or an internal warehouse transfer should be initiated immediately to avoid severity escalating to **High**."
+2026-05-20 18:37:42,EC-004,edge_case,Workforce workaround exists but creates cascade risk for another order,0.5,PARTIAL,"The response correctly flags PO-1122 as at risk with a workforce primary driver and does not incorrectly flag PO-5599 as currently at risk. However, it assigns HIGH severity rather than the expected MEDIUM severity, and critically fails to note that reallocation of operators from PO-5599 is a viable option — instead stating there is 'no recovery path,' which misses the cascade risk nuance. Per the rubric, assigning high severity without acknowledging the reallocation option caps the score at 0.5.","## MES Risk Analysis — 2026-05-20 13:40
+
+---
+
+### ⚠️ AT-RISK ORDERS: 1 IDENTIFIED
+
+---
+
+#### 🔴 PO-1122 | Press Frame | Due: 2026-05-20 21:00 — **HIGH SEVERITY**
+
+| Field | Detail |
+|---|---|
+| **Primary Risk Driver** | **Workforce** |
+| **Secondary Risk Driver** | None |
+| **Severity** | **HIGH** |
+
+**Rationale:** PO-1122 requires 2 HYD-PRESS-OPS certified operators to begin Op 20 at Shift 2 start (14:00), but both qualified operators are fully committed to PO-5599 with no certified alternates available, leaving zero staffing coverage and no recovery path within the 7-hour window before the 21:00 due date.
+
+**Key Supporting Facts:**
+- Machines (HP-01/HP-02) are available and healthy at 90% OEE — **not a constraint**
+- All BOM components are on-hand — **not a constraint**
+- Risk is **exclusively workforce-driven**: certification requirement HYD-PRESS-OPS cannot be met with current Shift 2 staffing
+
+**Recommended Immediate Actions:**
+1. Determine when PO-5599 Op 10 completes so operators can be sequenced to PO-1122
+2. Evaluate whether any off-shift or cross-trained HYD-PRESS-OPS certified operators can be called in
+3. Escalate to production supervisor now — at 13:40, the buffer before Shift 2 start is less than 20 minutes
+
+---
+
+#### ✅ PO-5599 | Cover Plate | Due: 2026-05-21 06:00 — **NO RISK IDENTIFIED**
+
+Op 10 is 60% complete, machines are running at 90% OEE, certified operators are assigned, and all inventory is on-hand. No risk drivers are present based on current snapshot data."
+2026-05-20 18:37:42,AV-001,adversarial,Alarming machine telemetry but no active order assigned to that machine,0.0,FAIL,"The AI incorrectly flags PO-3388 as HIGH risk based on speculative concerns about LATHE-01 availability, when the MES data shows LATHE-01 is running normally at 90% OEE with no anomalies. The expected output explicitly states no current orders are at risk, and fabricating a risk scenario from normal operational conditions constitutes a hallucination per the rubric.","## MES Risk Analysis — 2026-05-20 16:10
+
+---
+
+### ⚠️ AT-RISK ORDERS
+
+---
+
+#### 🔴 PO-3388 — Motor Bracket | Severity: **HIGH**
+| Field | Detail |
+|---|---|
+| **Due Date** | 2026-05-21 10:00 |
+| **Primary Risk Driver** | **Machine** |
+| **Secondary Risk Driver** | None |
+
+**Rationale:** LATHE-01 is currently running another job and PO-3388 is not scheduled to start until 06:00 on 2026-05-21, leaving no buffer time before the 10:00 due date — any delay to the current job on LATHE-01, unplanned downtime, or setup overrun will cause PO-3388 to miss its due date without immediate intervention.
+
+---
+
+### ✅ ORDERS NOT AT RISK
+
+---
+
+**PO-2211 — Rotary Encoder Housing**
+GRD-04 is running at 92% OEE with only 1.5 hours of work remaining against a due date of 2026-05-21 14:00, providing approximately **~20 hours of buffer**; no risk is identified.
+
+---
+
+### 📋 ADDITIONAL OBSERVATIONS (No Active Order Impact)
+
+**CNC-12** is exhibiting elevated vibration (2.4× baseline) and spindle temperature 17% above nominal with degraded OEE of 76%. While no currently active production order is assigned to CNC-12, **PO-7799 is scheduled on this machine with a due date of 2026-05-25**. This machine condition warrants proactive maintenance review before PO-7799 enters production to avoid a risk escalation at that time.
+
+> ⚠️ *Note: PO-7799 is not flagged as at-risk in this snapshot because it has not yet entered active status and no operational data exists for its remaining cycle time or schedule fit. Recommend reassessment when PO-7799 is scheduled for queue entry.*
+
+---
+
+### Summary Table
+
+| Order | Product | Severity | Primary Driver | Secondary Driver |
+|---|---|---|---|---|
+| PO-3388 | Motor Bracket | 🔴 High | Machine (LATHE-01 availability) | — |
+| PO-2211 | Rotary Encoder Housing | ✅ None | — | — |"
+2026-05-20 18:37:42,AV-002,adversarial,Critical inventory alert on a component not on any active order's BOM,1.0,PASS,"The AI correctly reports no active orders at risk, clears both PO-4400 and PO-5511 with sound rationale, and appropriately categorizes the X-999 alert as a procurement concern for future Product Line C orders rather than an active production risk. This is a textbook full-credit response.","## MES Risk Analysis — 2026-05-20 10:20
+
+---
+
+### Orders At Risk
+
+**No production orders are currently at risk.**
+
+---
+
+### Rationale by Order
+
+**PO-4400 — Gearbox Housing | Due: 2026-05-20 20:00**
+With 2.5 hours of remaining runtime at 89% OEE, the effective completion time is approximately 2.8 hours, placing finish around 13:05 — well within the 20:00 due date. Both BOM components are on-hand, and workforce is fully staffed. No risk drivers are present.
+
+**PO-5511 — Mounting Flange | Due: 2026-05-21 08:00**
+Drilling is scheduled to start at 18:00 with a 1.0-hour duration, yielding an estimated completion of 19:00 on 2026-05-20 — approximately 13 hours ahead of the 08:00 due date. The required component is on-hand, and workforce is fully staffed. No risk drivers are present.
+
+---
+
+### Inventory Alert — Disposition
+
+⚠️ The critical low-stock alert for **Component X-999 (Precision Lens Array)** does not affect any currently active production order. X-999 is used exclusively in Product Line C, and **no Product Line C orders are active**. This alert is noted for procurement planning purposes but generates **no order-level risk flag** under current conditions."
+2026-05-20 18:37:42,AV-003,adversarial,Workforce alert fires for an operation already completed on the order,0.0,FAIL,"The AI incorrectly flags PO-4455 as 'AT RISK — LOW severity' in its structured assessment, directly contradicting the expected output of an empty at_risk_orders list. While the rationale text correctly explains the coating alert is inapplicable, the rubric is strict on adversarial cases: hallucinating risk for an order that is NOT at risk results in a score of 0.0.","## MES Risk Analysis — 2026-05-20 17:55
+
+---
+
+### At-Risk Orders Assessment
+
+---
+
+**PO-4455 — Coated Valve Body**
+*Due: 2026-05-20 21:00*
+
+| Attribute | Assessment |
+|---|---|
+| **Risk Status** | ⚠️ AT RISK — LOW severity |
+| **Primary Risk Driver** | None applicable to remaining operations |
+| **Secondary Risk Driver** | None applicable to remaining operations |
+| **Severity** | **LOW** |
+
+**Rationale:** Op 40 (Final Inspection & Pack) is estimated to complete at 18:45 — over two hours ahead of the 21:00 due date — on a high-performing inspection station (OEE: 96%), providing substantial buffer against the due date; the Shift 3 coating operator shortage is **not flagged as a risk driver** because all coating operations are already complete and no remaining operations require coating-qualified personnel.
+
+---
+
+### ✅ No High or Medium Severity Orders Identified
+
+---
+
+### Advisory Note *(for situational awareness only)*
+The Shift 3 ISO-9001 Coating Operator shortage (1 of 3 required scheduled) is a **staffing gap that may impact future orders** beginning at 22:00. This does not affect PO-4455 but should be escalated to production planning if any coating orders are scheduled for that shift window."
+2026-05-20 18:37:42,RG-001,regression,Obvious primary victim; second order on same downed machine is easy to miss,1.0,PASS,"The AI correctly identifies both PO-7788 (machine, high) and PO-3311 (machine, medium) as at-risk orders, correctly exempts PO-9944, and provides accurate reasoning for each including the LT-09 dependency and repair window analysis. This matches the expected output exactly per the full credit criteria.","## MES Risk Analysis — 2026-05-20 11:30
+
+---
+
+### ⚠️ AT-RISK ORDERS IDENTIFIED: 2
+
+---
+
+#### 🔴 PO-7788 | Lathe Chuck Body | Due: 2026-05-20 15:30
+| Field | Detail |
+|---|---|
+| **Primary Risk Driver** | Machine |
+| **Secondary Risk Driver** | None |
+| **Severity** | **HIGH** |
+
+**Rationale:** LT-09 has been down since 11:15 with an estimated repair window of 3–4 hours, meaning the machine is unlikely to be restored before 14:15–15:15 at the earliest; with 2.5 hours of turning still required, PO-7788 cannot complete before 16:45–17:45 at best — well past the 15:30 due date, with no recovery path absent machine substitution or expediting.
+
+---
+
+#### 🟠 PO-3311 | Spindle Housing | Due: 2026-05-20 19:00
+| Field | Detail |
+|---|---|
+| **Primary Risk Driver** | Machine |
+| **Secondary Risk Driver** | None |
+| **Severity** | **MEDIUM** |
+
+**Rationale:** PO-3311 is scheduled to start on LT-09 at 14:00, but the hydraulic fault (Est. repair: 3–4 hrs from ~11:15) places machine restoration between 14:15 and 15:15 — pushing the earliest possible start to ~15:15 and completion to ~18:15, which remains inside the 19:00 due date only if repair concludes at the optimistic end of the estimate; a worst-case repair outcome or any additional delay would breach the due date.
+
+---
+
+### ✅ PO-9944 | Bearing Race | Due: 2026-05-21 06:00
+**No risk identified.** GRD-07 is running at 91% OEE with only 1.0 hour of grinding remaining, providing approximately **17.5 hours of buffer** against the due date.
+
+---
+
+### Summary Table
+
+| Order | Product | Due Date | Severity | Primary Driver | Secondary Driver |
+|---|---|---|---|---|---|
+| PO-7788 | Lathe Chuck Body | 2026-05-20 15:30 | 🔴 HIGH | Machine (LT-09 down) | — |
+| PO-3311 | Spindle Housing | 2026-05-20 19:00 | 🟠 MEDIUM | Machine (LT-09 down) | — |
+| PO-9944 | Bearing Race | 2026-05-21 06:00 | ✅ None | — | — |
+
+---
+
+### Recommended Immediate Actions
+1. **PO-7788:** Escalate LT-09 repair to priority maintenance or identify an alternate turning machine capable of the chuck body operation to avoid missing the 15:30 deadline.
+2. **PO-3311:** Monitor LT-09 repair progress closely; if restoration slips past ~15:15, trigger a contingency plan (alternate machine or customer notification) to protect the 19:00 due date."
+2026-05-20 18:37:42,RG-002,regression,Obvious inventory risk; hidden workforce gap on the next operation,1.0,PASS,"The AI response correctly identifies PO-2244 as at-risk with high severity, accurately flags inventory (F-501 shortfall at ~15% of required quantity with no pending receipt) as the primary driver, and explicitly identifies the workforce gap for Op 50 (zero ISO-PREC-ASSEMBLY certified operators on Shift 2) as the secondary driver. Both risk drivers are thoroughly explained with quantitative detail matching the expected output.","## MES Risk Analysis — 2026-05-20 09:00
+
+---
+
+### ⚠️ AT-RISK ORDERS: 1 IDENTIFIED
+
+---
+
+#### PO-2244 — Precision Actuator | Due: 2026-05-20 22:00
+
+| Field | Detail |
+|---|---|
+| **Severity** | 🔴 HIGH |
+| **Primary Risk Driver** | Inventory |
+| **Secondary Risk Driver** | Workforce |
+
+**Rationale:**
+Op 40 (Sub-assembly) cannot complete as planned — only **91 of 600 required Micro-Spring F-501 units are on-hand**, with **no pending receipt**, making it impossible to finish the sub-assembly operation ahead of the 22:00 due date; compounding this, even if the inventory shortfall were resolved, **Op 50 (Final Assembly) has zero ISO-PREC-ASSEMBLY certified operators scheduled for Shift 2**, the shift during which final assembly would need to execute.
+
+---
+
+**Risk Breakdown:**
+
+- **Inventory (Primary):** The F-501 component shortfall (509 units, ~85% of requirement unfulfilled) with no inbound supply will halt Op 40 mid-operation. There is no recovery path visible in the current snapshot.
+- **Workforce (Secondary):** All 4 certified operators are on Shift 1 only. Op 50 requires 2 ISO-PREC-ASSEMBLY certified operators. With Op 40 already delayed, Op 50 would fall squarely in Shift 2 — where **zero** certified operators are scheduled. This creates a compounding failure even if the inventory issue were somehow resolved.
+- **Machine (Not flagged):** SA-Line-3 is running at 88% OEE, which is healthy and does not independently constitute a risk driver for this order.
+
+---
+
+**Recommended Immediate Actions** *(for human decision-makers):*
+1. 🔍 Escalate F-501 sourcing — identify emergency procurement or inter-facility transfer options immediately.
+2. 👷 Review certified operator availability for Shift 2 cross-scheduling or overtime authorization before 14:00 today.
+3. ⏱️ Assess whether due date negotiation with the customer is required given the dual constraint.
+
+---
+
+*Analysis based strictly on data present in MES snapshot. No conditions inferred beyond reported data.*"
+2026-05-20 18:37:42,RG-003,regression,Obvious workforce gap; machine degradation is a silent compounding factor,0.5,PARTIAL,"The AI correctly flags PO-6634 as high severity and identifies both workforce and machine OEE degradation as risk drivers, capturing all the key facts. However, the rubric specifies that workforce must be the primary driver and machine degradation the secondary driver — the AI inverts this, listing machine as primary and workforce as secondary. This misidentification of the primary driver, even though both factors are recognized, warrants partial credit rather than full credit.","## MES Risk Analysis — 2026-05-20 13:15
+
+---
+
+### AT-RISK ORDERS: 1 IDENTIFIED
+
+---
+
+#### PO-6634 | CNC Brake Housing | Due: 2026-05-20 21:00
+
+| Field | Detail |
+|---|---|
+| **Severity** | 🔴 HIGH |
+| **Primary Risk Driver** | Machine |
+| **Secondary Risk Driver** | Workforce |
+
+**Machine Risk Rationale:**
+CNC-05 is operating at 66% OEE against an 85% standard, and the trend is actively declining. At the current effective rate, the remaining work on Op 30 is projected at **~3.9 hours** of real elapsed time. With the shift transition at **14:00** (~45 minutes from snapshot time), this places completion at approximately **21:00–21:45**, straddling or breaching the 21:00 due date — with zero buffer and a worsening performance curve.
+
+**Workforce Risk Rationale:**
+Shift 2 will be staffed at **50% of the required CNC operator headcount** (2 confirmed vs. 4 required) due to one approved leave and one same-day callout. This understaffing is likely to further suppress throughput and may prevent any pace recovery that could otherwise offset the machine degradation. It also eliminates the option of parallel tasking or accelerated changeover to recover lost time.
+
+**Inventory:** Not a contributing risk factor — all BOM components are confirmed on-hand.
+
+---
+
+### RECOMMENDED IMMEDIATE ACTIONS
+
+1. **Investigate CNC-05 degradation** — declining OEE from 79% → 66% in two hours suggests a developing mechanical or tooling issue. A brief intervention now may be less costly than a mid-run failure.
+2. **Escalate Shift 2 staffing gap** — attempt to source 2 additional qualified CNC operators before 14:00 via overtime callout or cross-shift hold-over.
+3. **Evaluate due date risk with customer/planning** — given the compounding of both risk drivers, notify the relevant planner now that on-time completion is in jeopardy and a short delay is probable without intervention.
+
+---
+
+> ⚠️ **No other production orders are present in the current snapshot. Analysis is confined to data provided.**"
