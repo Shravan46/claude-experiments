@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DXM Vision — AI Eval Spec: At-Risk Production Order Flagging</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f6f8;
+      color: #1a1d23;
+      line-height: 1.65;
+    }
+
+    /* ── Layout ── */
+    .page { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* ── Header ── */
+    .doc-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      color: #fff;
+      padding: 48px 40px 36px;
+      margin: 0 -24px 48px;
+    }
+    .doc-header .label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #7dd3fc;
+      margin-bottom: 12px;
+    }
+    .doc-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+    .doc-header .subtitle {
+      font-size: 15px;
+      color: #94a3b8;
+      margin-bottom: 28px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .meta-item { }
+    .meta-item .key {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+    .meta-item .val {
+      font-size: 14px;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    /* ── Section ── */
+    section { margin-bottom: 52px; }
+    section + section { border-top: 1px solid #e2e7ef; padding-top: 48px; }
+    .section-num {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #2563eb;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 16px;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e3a5f;
+      margin: 24px 0 8px;
+    }
+    p { margin-bottom: 14px; color: #374151; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── Lead text ── */
+    .lead {
+      font-size: 16px;
+      color: #374151;
+      border-left: 3px solid #2563eb;
+      padding-left: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin: 20px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    th {
+      background: #1e3a5f;
+      color: #fff;
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e9edf3;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Pills / Badges ── */
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .pill-green  { background: #dcfce7; color: #15803d; }
+    .pill-yellow { background: #fef9c3; color: #92400e; }
+    .pill-red    { background: #fee2e2; color: #b91c1c; }
+    .pill-blue   { background: #dbeafe; color: #1d4ed8; }
+    .pill-gray   { background: #f1f5f9; color: #475569; }
+    .pill-orange { background: #ffedd5; color: #c2410c; }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .callout-title {
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .callout-red    { background: #fef2f2; border-left: 4px solid #dc2626; }
+    .callout-red .callout-title { color: #dc2626; }
+    .callout-yellow { background: #fffbeb; border-left: 4px solid #d97706; }
+    .callout-yellow .callout-title { color: #d97706; }
+    .callout-blue   { background: #eff6ff; border-left: 4px solid #2563eb; }
+    .callout-blue .callout-title { color: #2563eb; }
+    .callout-green  { background: #f0fdf4; border-left: 4px solid #16a34a; }
+    .callout-green .callout-title { color: #16a34a; }
+
+    /* ── Score summary cards ── */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .score-card {
+      background: #fff;
+      border: 1px solid #e2e7ef;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+    .score-card .cat-label {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .score-card .score-num {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .score-card .score-detail {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .score-perfect { color: #16a34a; }
+    .score-good    { color: #d97706; }
+    .score-bad     { color: #dc2626; }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap { margin: 8px 0 4px; }
+    .progress-bar-bg {
+      background: #e9edf3;
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+    .fill-green  { background: #22c55e; }
+    .fill-yellow { background: #f59e0b; }
+    .fill-red    { background: #ef4444; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 3px;
+    }
+
+    /* ── Test result rows ── */
+    .test-result {
+      background: #fff;
+      border: 1px solid #e2e7ef;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .test-result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .test-id {
+      font-family: "SF Mono", "Fira Code", Menlo, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #2563eb;
+      background: #eff6ff;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .test-desc {
+      font-size: 14px;
+      color: #374151;
+      flex: 1;
+    }
+    .judge-note {
+      font-size: 13px;
+      color: #4b5563;
+      font-style: italic;
+      border-left: 3px solid #d1d5db;
+      padding-left: 12px;
+      margin-top: 8px;
+    }
+
+    /* ── Action items ── */
+    .action-list { list-style: none; padding: 0; }
+    .action-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
+      color: #374151;
+    }
+    .action-list li:last-child { border-bottom: none; }
+    .action-num {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      background: #1e3a5f;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    /* ── Category blocks ── */
+    .category-block {
+      background: #fff;
+      border: 1px solid #e2e7ef;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .category-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* ── Footer ── */
+    .doc-footer {
+      margin-top: 72px;
+      padding-top: 24px;
+      border-top: 2px solid #e2e7ef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    /* ── Utility ── */
+    code {
+      font-family: "SF Mono", "Fira Code", Menlo, monospace;
+      font-size: 12.5px;
+      background: #f1f5f9;
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #1e3a5f;
+    }
+    ul, ol { padding-left: 20px; margin: 12px 0; }
+    li { margin-bottom: 6px; font-size: 14px; color: #374151; }
+    strong { color: #0f172a; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <div class="doc-header">
+    <div class="label">PM Evaluation Specification</div>
+    <h1>DXM Vision Manufacturing AI<br>At-Risk Production Order Flagging</h1>
+    <div class="subtitle">Eval Spec v1.0 — Run 1 Results &amp; Launch Readiness Assessment</div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="key">Document Owner</div>
+        <div class="val">Shravan Sudhakaran</div>
+      </div>
+      <div class="meta-item">
+        <div class="key">Date</div>
+        <div class="val">2026-05-20</div>
+      </div>
+      <div class="meta-item">
+        <div class="key">Model Under Test</div>
+        <div class="val">claude-sonnet-4-6</div>
+      </div>
+      <div class="meta-item">
+        <div class="key">Eval Method</div>
+        <div class="val">LLM-as-Judge</div>
+      </div>
+      <div class="meta-item">
+        <div class="key">Launch Status</div>
+        <div class="val" style="color:#fca5a5;">&#x26A0; NOT READY</div>
+      </div>
+      <div class="meta-item">
+        <div class="key">Run 1 Score</div>
+        <div class="val">73% (11.0 / 15 pts)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 1. FEATURE OVERVIEW ── -->
+  <section>
+    <div class="section-num">Section 01</div>
+    <h2>Feature Overview</h2>
+    <p class="lead">An AI assistant embedded in DXM Vision's Manufacturing Execution System (MES) that proactively identifies production orders at risk of missing their due dates — before the delay becomes irreversible.</p>
+    <p>Manufacturing floors generate continuous signals: machine faults, inventory alerts, shift callouts. Today these signals live in separate dashboards. A CNC spindle fault fires in the machine monitoring system. A component stockout fires in inventory management. A welder callout registers in the workforce schedule. None of these systems ask the next question: <em>which active production orders does this affect, and how badly?</em></p>
+    <p>The result is reactive operations. Supervisors find out an order is in jeopardy when it is already late — not when there was still time to reroute, re-staff, or expedite. The AI assistant closes this gap by synthesizing signals across three domains — machine health, inventory availability, and workforce — and attributing risk at the order level with a severity rating and a one-sentence rationale.</p>
+
+    <h3>Who It Serves</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Persona</th>
+            <th>Primary Need</th>
+            <th>How the Feature Helps</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Production Planner</strong></td>
+            <td>Early, prioritized risk signals to protect schedule</td>
+            <td>Receives a ranked list of at-risk orders with root-cause attribution before shift handoff</td>
+          </tr>
+          <tr>
+            <td><strong>MES Supervisor</strong></td>
+            <td>Actionable flags tied to specific orders, not system alerts</td>
+            <td>Every flag is order-centric: "PO-4821 is at risk because CNC-07 is down" rather than "CNC-07 is down"</td>
+          </tr>
+          <tr>
+            <td><strong>Operations Manager</strong></td>
+            <td>Visibility into cascade risk and recovery options</td>
+            <td>Secondary driver identification surfaces compounding risks before they become primary constraints</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Why It Exists</h3>
+    <p>DXM Vision's current monitoring posture is reactive. The gap is not data availability — real-time telemetry, inventory feeds, and workforce schedules already exist. The gap is <strong>synthesis</strong>: no system currently translates isolated operational alerts into order-level risk with enough lead time to act. This feature is the synthesis layer.</p>
+  </section>
+
+  <!-- ── 2. EVAL OBJECTIVES ── -->
+  <section>
+    <div class="section-num">Section 02</div>
+    <h2>Eval Objectives</h2>
+    <p class="lead">This eval suite is designed to answer five questions before we authorize production deployment.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Tested By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Q1</strong></td>
+            <td>Does the model correctly identify at-risk orders when signals are clear and unambiguous?</td>
+            <td>Happy Path (HP-001 – HP-005)</td>
+          </tr>
+          <tr>
+            <td><strong>Q2</strong></td>
+            <td>Does the model calibrate severity accurately — distinguishing a critical order miss from a recoverable risk with buffer?</td>
+            <td>Edge Cases (EC-001 – EC-004)</td>
+          </tr>
+          <tr>
+            <td><strong>Q3</strong></td>
+            <td>Does the model hallucinate risk from alarming-but-irrelevant signals that do not apply to active orders?</td>
+            <td>Adversarial (AV-001 – AV-003)</td>
+          </tr>
+          <tr>
+            <td><strong>Q4</strong></td>
+            <td>Does the model catch secondary risk drivers — the quieter compounding factors alongside the obvious loud signal?</td>
+            <td>Regression (RG-001 – RG-003)</td>
+          </tr>
+          <tr>
+            <td><strong>Q5</strong></td>
+            <td>Is the model safe to put in front of production planners — meaning its worst failure mode is missing a risk, not inventing one?</td>
+            <td>Adversarial + overall critical failure count</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">Design Principle</div>
+      In a manufacturing context, a false positive (flagging a safe order as at-risk) causes wasted supervisor attention. A false negative (missing a genuinely at-risk order) causes a late shipment. A hallucinated risk on an order that is actually safe and well-buffered is the worst outcome: it erodes trust in the system, causing operators to dismiss future alerts — including legitimate ones. Q5 is therefore the gating question. An unacceptable adversarial failure rate blocks launch regardless of performance on other categories.
+    </div>
+  </section>
+
+  <!-- ── 3. TEST CASE DESIGN RATIONALE ── -->
+  <section>
+    <div class="section-num">Section 03</div>
+    <h2>Test Case Design Rationale</h2>
+    <p class="lead">Four categories. Each tests a distinct failure mode. Together they cover the full risk surface of a production deployment.</p>
+
+    <div class="category-block">
+      <div class="category-header">
+        <div class="category-name">Happy Path <span style="color:#64748b;font-weight:400;font-size:14px;">(HP-001 – HP-005, 5 cases)</span></div>
+        <span class="pill pill-blue">Baseline Competence</span>
+      </div>
+      <p>Clear, unambiguous signals where a correct answer requires no inference beyond the data provided. Machine is down and the order runs on that machine. Inventory will run out before the order completes. Certified operators are absent and the operation requires certification. If the model cannot achieve near-perfect scores here, no further evaluation is warranted.</p>
+      <p>HP-004 adds one layer of complexity: three orders in the snapshot, two at risk and one on track. This tests whether the model correctly applies the "no risk inferred beyond data present" constraint — it must flag the right two orders and leave the third alone.</p>
+      <p>HP-005 tests OEE-to-throughput reasoning. The machine is not down; it is degraded. The model must perform the math (57% OEE × 2.0 hr standard = ~3.5 actual hr) and compare it to the remaining time window. This is the most cognitively demanding of the happy path cases.</p>
+    </div>
+
+    <div class="category-block">
+      <div class="category-header">
+        <div class="category-name">Edge Cases <span style="color:#64748b;font-weight:400;font-size:14px;">(EC-001 – EC-004, 4 cases)</span></div>
+        <span class="pill pill-yellow">Severity Calibration &amp; Multi-Driver Detection</span>
+      </div>
+      <p>Cases where the correct answer requires judgment rather than pattern-matching. EC-001 presents two degraded-but-not-catastrophic signals and expects the model to name both as contributing drivers with medium severity. EC-002 presents a downed machine but gives the order ~12 hours of float — the correct severity is low, not high. EC-003 uses a component that is nominally sufficient (201 vs. 200 required) but historically risky given a 2.1% reject rate. EC-004 introduces cascade risk: solving the primary order's workforce gap by reallocating operators would create a new risk for a second order.</p>
+      <p>This category is designed to surface <strong>severity over-escalation bias</strong> — the tendency to call everything "high" when any risk signal is present — and <strong>driver incompleteness</strong> — catching the primary signal but missing the secondary one.</p>
+    </div>
+
+    <div class="category-block">
+      <div class="category-header">
+        <div class="category-name">Adversarial <span style="color:#64748b;font-weight:400;font-size:14px;">(AV-001 – AV-003, 3 cases)</span></div>
+        <span class="pill pill-red">Hallucination &amp; Relevance Filtering</span>
+      </div>
+      <p>Each adversarial case includes an alarming signal that is genuinely irrelevant to the active orders in the snapshot. AV-001: a machine exhibiting anomalous vibration and temperature, but no active order is running on that machine. AV-002: a critical component inventory alert, but the component is exclusively used in a product line with no active orders. AV-003: a workforce shortage alert for a certified operation that has already been completed on the order in question.</p>
+      <p>The correct answer for all three is: <strong>no orders currently at risk</strong>. The model is permitted to note the signals as future planning concerns. It is not permitted to flag active orders as at-risk based on inapplicable data. Any hallucinated risk flag is scored as 0.0 with no partial credit.</p>
+      <p>This category is zero-tolerance because in production use, a hallucinated flag from alarming-but-irrelevant data is exactly how operators learn to ignore the system. One high-profile false alarm on a time-pressured shop floor destroys weeks of trust-building.</p>
+    </div>
+
+    <div class="category-block">
+      <div class="category-header">
+        <div class="category-name">Regression <span style="color:#64748b;font-weight:400;font-size:14px;">(RG-001 – RG-003, 3 cases)</span></div>
+        <span class="pill pill-orange">Secondary Driver Detection</span>
+      </div>
+      <p>Each regression case contains one obvious, "loud" risk signal and one quieter, secondary signal that a shallow analysis would miss. RG-001: an obvious primary victim of a downed machine, plus a second queued order that depends on the same machine and is often overlooked. RG-002: a severe inventory shortfall (the loud signal) plus a workforce certification gap on the next operation that would prevent recovery even if the inventory problem were resolved. RG-003: an obvious workforce staffing gap (the loud signal) plus a declining OEE on the assigned machine that compounds the risk independently.</p>
+      <p>Missing a secondary driver in a regression case is scored as partial credit (0.5). This reflects the real operational cost: a planner who receives an incomplete risk picture may resolve the primary constraint and discover the secondary one too late to act.</p>
+    </div>
+  </section>
+
+  <!-- ── 4. SCORING RUBRIC ── -->
+  <section>
+    <div class="section-num">Section 04</div>
+    <h2>Scoring Rubric</h2>
+    <p class="lead">Three score values. Each reflects a distinct quality of response. The thresholds are strict because the cost of ambiguity in production is a late shipment.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Score</th>
+            <th>Verdict</th>
+            <th>General Criteria</th>
+            <th>Category Exceptions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1.0</strong></td>
+            <td><span class="pill pill-green">Pass</span></td>
+            <td>Correct order identification, correct primary driver, correct severity, reasoning grounded in snapshot data only.</td>
+            <td><strong>Adversarial:</strong> correctly clears all active orders; may note signals as future concerns. <strong>Regression:</strong> both primary and secondary drivers named and attributed to the right order.</td>
+          </tr>
+          <tr>
+            <td><strong>0.5</strong></td>
+            <td><span class="pill pill-yellow">Partial</span></td>
+            <td>Correct order identification and primary driver, but one of: wrong severity, missing secondary driver, or minor diagnostic gap in rationale.</td>
+            <td><strong>Adversarial:</strong> no partial credit — hallucinating risk for a safe order is 0.0. <strong>Regression:</strong> missing the secondary driver caps at 0.5 regardless of how well the primary is handled.</td>
+          </tr>
+          <tr>
+            <td><strong>0.0</strong></td>
+            <td><span class="pill pill-red">Fail</span></td>
+            <td>Misses an at-risk order entirely, misidentifies the primary driver, or flags an order that is not at risk.</td>
+            <td><strong>Adversarial:</strong> any hallucinated risk on an active order that is actually safe = 0.0, no exceptions. <strong>Happy Path:</strong> failure to identify the at-risk order = 0.0.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Rationale for Three-Tier Scoring</h3>
+    <p>A binary pass/fail rubric would mask an important distinction: a model that identifies the right order with the wrong severity is significantly more useful than one that misses the order entirely. The 0.5 score preserves this signal, allowing the eval summary to differentiate a model that has the right instinct but poor calibration from one that is making fundamental attribution errors.</p>
+    <p>The adversarial exception to partial credit is intentional and non-negotiable. Severity over-escalation on a legitimate at-risk order is a calibration problem, fixable with prompt tuning. Hallucinating risk on a safe order is a relevance-filtering failure — a categorically different problem that cannot be partially rewarded.</p>
+  </section>
+
+  <!-- ── 5. LAUNCH THRESHOLDS ── -->
+  <section>
+    <div class="section-num">Section 05</div>
+    <h2>Launch Thresholds</h2>
+    <p class="lead">Minimum scores required to authorize production deployment. All four category thresholds must be met simultaneously. Meeting three out of four is not sufficient.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Cases</th>
+            <th>Min Score to Ship</th>
+            <th>Rationale</th>
+            <th>Run 1 Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Happy Path</strong></td>
+            <td>5</td>
+            <td>5/5 (100%)</td>
+            <td>If the model cannot handle unambiguous signals reliably, the feature has no value. Anything less than perfect is a regression risk.</td>
+            <td><span class="pill pill-green">5/5 ✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>Edge Cases</strong></td>
+            <td>4</td>
+            <td>≥ 3.0/4 points (75%)</td>
+            <td>Some severity miscalibration is acceptable at launch with a tuning roadmap, but the model must correctly identify at-risk orders and their primary drivers in at least 3 of 4 edge scenarios.</td>
+            <td><span class="pill pill-red">2.5/4 ✗</span></td>
+          </tr>
+          <tr>
+            <td><strong>Adversarial</strong></td>
+            <td>3</td>
+            <td>3/3 (100%)</td>
+            <td>Zero tolerance. One hallucinated risk flag in production can undermine planner trust in the entire alert system. The model must correctly filter irrelevant signals in every adversarial case before launch.</td>
+            <td><span class="pill pill-red">1/3 ✗</span></td>
+          </tr>
+          <tr>
+            <td><strong>Regression</strong></td>
+            <td>3</td>
+            <td>≥ 2.5/3 points (83%)</td>
+            <td>Missing secondary drivers is costly but recoverable — the primary risk is still surfaced. One partial-credit miss is acceptable; failing to catch both drivers on two or more cases is not.</td>
+            <td><span class="pill pill-yellow">2.5/3 ✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>Overall</strong></td>
+            <td>15</td>
+            <td>≥ 13.0/15 points (87%)</td>
+            <td>A composite floor ensuring no single strong category masks systemic weakness elsewhere.</td>
+            <td><span class="pill pill-red">11.0/15 ✗</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-red">
+      <div class="callout-title">Current Status: Not Launch-Ready</div>
+      Run 1 fails two of four category thresholds — Adversarial (1/3, requires 3/3) and Edge Cases (2.5/4, requires ≥ 3.0/4) — and falls short of the overall composite floor (11.0/15, requires ≥ 13.0/15). The adversarial failure is blocking. Deployment cannot proceed until the hallucination failure modes are resolved and verified in a subsequent eval run.
+    </div>
+  </section>
+
+  <!-- ── 6. CRITICAL FAILURE MODES ── -->
+  <section>
+    <div class="section-num">Section 06</div>
+    <h2>Critical Failure Modes</h2>
+    <p class="lead">Three failure types are classified as zero-tolerance. Any single instance blocks launch, regardless of overall score.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Failure Mode</th>
+            <th>Definition</th>
+            <th>Why Zero-Tolerance</th>
+            <th>Run 1 Instances</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Cross-Machine Hallucination</strong></td>
+            <td>Model flags an active order as at-risk because of machine anomalies on a machine not assigned to that order.</td>
+            <td>Planners will act on this — rerouting an order that is actually on schedule burns capacity and creates disruption where none existed.</td>
+            <td><span class="pill pill-red">1 (AV-001)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Completed-Operation Hallucination</strong></td>
+            <td>Model flags an order as at-risk for a risk driver that applies only to an operation that has already been completed on that order.</td>
+            <td>This is the hardest hallucination to defend against with UI guardrails — the alert looks credible, the order is real, and the operation name is correct. Only the completion status distinguishes it.</td>
+            <td><span class="pill pill-red">1 (AV-003)</span></td>
+          </tr>
+          <tr>
+            <td><strong>False Flag on Confirmed Safe Order</strong></td>
+            <td>Model assigns at-risk status to an order with no active risk drivers, fabricating a risk scenario from data that does not apply to that order.</td>
+            <td>Once planners see the system produce a false alarm on an order they know is safe, every subsequent alert — including legitimate ones — is viewed with skepticism. Trust is asymmetric: slow to build, fast to lose.</td>
+            <td><span class="pill pill-red">1 (AV-001, PO-3388)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">Non-Zero-Tolerance Failures (Still Important)</div>
+      Severity over-escalation (assigning HIGH to a low-buffer situation) and driver ordering errors (inverting primary and secondary) are not zero-tolerance, but they are tracked as quality metrics and have their own remediation actions. If either pattern appears in more than 30% of applicable cases in Run 2, the threshold should be re-evaluated before the subsequent run.
+    </div>
+  </section>
+
+  <!-- ── 7. RUN 1 RESULTS ── -->
+  <section>
+    <div class="section-num">Section 07</div>
+    <h2>Eval Run 1 Results</h2>
+    <p><strong>Date:</strong> 2026-05-20 18:37 &nbsp;|&nbsp; <strong>Model:</strong> claude-sonnet-4-6 &nbsp;|&nbsp; <strong>Test cases:</strong> 15 &nbsp;|&nbsp; <strong>Scoring:</strong> LLM-as-judge (claude-sonnet-4-6)</p>
+
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="cat-label">Happy Path</div>
+        <div class="score-num score-perfect">100%</div>
+        <div class="score-detail">5/5 full credit</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-green" style="width:100%"></div></div>
+          <div class="progress-label"><span>0</span><span>5.0 / 5.0 pts</span></div>
+        </div>
+      </div>
+      <div class="score-card">
+        <div class="cat-label">Edge Cases</div>
+        <div class="score-num score-good">63%</div>
+        <div class="score-detail">1 pass, 3 partial, 0 fail</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-yellow" style="width:63%"></div></div>
+          <div class="progress-label"><span>0</span><span>2.5 / 4.0 pts</span></div>
+        </div>
+      </div>
+      <div class="score-card">
+        <div class="cat-label">Adversarial</div>
+        <div class="score-num score-bad">33%</div>
+        <div class="score-detail">1 pass, 0 partial, 2 critical fail</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-red" style="width:33%"></div></div>
+          <div class="progress-label"><span>0</span><span>1.0 / 3.0 pts</span></div>
+        </div>
+      </div>
+      <div class="score-card">
+        <div class="cat-label">Regression</div>
+        <div class="score-num score-good">83%</div>
+        <div class="score-detail">2 pass, 1 partial, 0 fail</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-yellow" style="width:83%"></div></div>
+          <div class="progress-label"><span>0</span><span>2.5 / 3.0 pts</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-red" style="margin-top:8px;">
+      <div class="callout-title">Overall: 73% — 11.0 / 15.0 points — Below Launch Threshold</div>
+      Pass (1.0): 9 &nbsp;|&nbsp; Partial (0.5): 3 &nbsp;|&nbsp; Fail (0.0): 2 critical failures &nbsp;|&nbsp; No API or harness errors.
+    </div>
+
+    <h3>Happy Path — All Pass</h3>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">HP-001</span>
+        <span class="test-desc">Machine down, single order — obvious high-severity risk</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly identifies PO-4821, machine as primary driver, high severity, with accurate quantitative rationale (3–4 hr repair vs. 3.2 hr remaining vs. 5.5 hr window).</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">HP-002</span>
+        <span class="test-desc">Inventory stockout — component exhausted before order completes</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly flags PO-7712, inventory primary, high severity. Includes the supporting consumption calculation (47 units ÷ 120/hr ≈ 24 min to stockout) and quantifies the 453-unit gap.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">HP-003</span>
+        <span class="test-desc">Workforce gap — certified welders called out for next shift</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly flags PO-3344, workforce primary, high severity. Correctly notes the certification constraint (AWS D1.1 cannot be substituted by uncertified headcount) as the key limiting factor.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">HP-004</span>
+        <span class="test-desc">Three orders in snapshot — two at risk, one on track</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly flags PO-1001 (inventory, high) and PO-2002 (machine, high); correctly exempts PO-3003. No false flags on the safe order.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">HP-005</span>
+        <span class="test-desc">OEE degradation trend — throughput math shows order cannot complete on time</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly flags PO-5566, machine (OEE degradation) as primary driver, high severity. Accurately calculates ~10-minute buffer at current OEE and notes declining trend as an additional compounding factor.</div>
+    </div>
+
+    <h3>Edge Cases — Systematic Severity Over-Escalation Identified</h3>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">EC-001</span>
+        <span class="test-desc">Two degraded signals, neither catastrophic — both drivers required</span>
+        <span class="pill pill-yellow">0.5 Partial</span>
+      </div>
+      <div class="judge-note"><strong>Failure mode: severity over-escalation.</strong> Correctly identified both machine and inventory as contributing drivers. Assigned HIGH instead of MEDIUM, failing to account for the compounding risk being recoverable with intervention. The analysis itself is strong — the conclusion is miscalibrated.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">EC-002</span>
+        <span class="test-desc">Machine down but significant float — severity should be low, not high</span>
+        <span class="pill pill-yellow">0.5 Partial</span>
+      </div>
+      <div class="judge-note"><strong>Failure mode: severity over-escalation.</strong> Correctly flagged PO-6677 with machine as primary driver. Assigned MEDIUM instead of LOW, failing to explicitly quantify the ~12 hours of float that warrant a lower severity classification. The 14-hour window vs. 135-minute total exposure (repair + work) was not surfaced.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">EC-003</span>
+        <span class="test-desc">Inventory nominally sufficient but historical reject rate creates real risk</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly flagged PO-8823, inventory as driver, explicitly calculated the reject rate impact (201 units − ~4.2 expected rejects ≈ 197 conforming units, short of 200 required), and assigned medium severity. The reject-rate reasoning is exactly the non-obvious inference this case was designed to test.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">EC-004</span>
+        <span class="test-desc">Workforce workaround exists but creates cascade risk for another order</span>
+        <span class="pill pill-yellow">0.5 Partial</span>
+      </div>
+      <div class="judge-note"><strong>Failure mode: severity over-escalation + missed cascade nuance.</strong> Correctly flagged PO-1122 (workforce) and correctly did not flag PO-5599. However, assigned HIGH instead of MEDIUM, and critically stated "no recovery path" — missing that reallocation of PO-5599's operators <em>is</em> a recovery option, one that introduces cascade risk. The model treated an acknowledgment of options as out of scope.</div>
+    </div>
+
+    <h3>Adversarial — Two Critical Failures (Zero-Tolerance Breaches)</h3>
+
+    <div class="test-result" style="border-color:#dc2626;">
+      <div class="test-result-header">
+        <span class="test-id">AV-001</span>
+        <span class="test-desc">Alarming machine telemetry but no active order assigned to that machine</span>
+        <span class="pill pill-red">0.0 Fail — Critical</span>
+      </div>
+      <div class="judge-note"><strong>Hallucination type: speculative risk substitution.</strong> CNC-12 was exhibiting alarming telemetry (2.4× vibration baseline, spindle temp +17%) but had no active order. The model correctly identified CNC-12 as irrelevant to active orders — then invented a different risk: flagging PO-3388 as HIGH because LATHE-01 had "no buffer before its 10:00 due date." LATHE-01 was running at 90% OEE with no anomalies. The model found an alarming signal in the snapshot, correctly filtered it, then fabricated a justification to flag <em>something</em> anyway.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">AV-002</span>
+        <span class="test-desc">Critical inventory alert on a component not on any active order's BOM</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly cleared both PO-4400 and PO-5511. Correctly identified X-999 as a Product Line C component irrelevant to Line A and Line B active orders, and categorized it as a procurement concern rather than an active production risk.</div>
+    </div>
+
+    <div class="test-result" style="border-color:#dc2626;">
+      <div class="test-result-header">
+        <span class="test-id">AV-003</span>
+        <span class="test-desc">Workforce alert fires for an operation already completed on the order</span>
+        <span class="pill pill-red">0.0 Fail — Critical</span>
+      </div>
+      <div class="judge-note"><strong>Hallucination type: alert anchoring overrides operation status check.</strong> PO-4455's coating operation (Op 30) was completed at 15:30. The remaining operation was Final Inspection, estimated complete at 18:45 — over 2 hours ahead of the 21:00 due date. The workforce alert referenced Shift 3 coating capacity. The model's rationale correctly explained why the alert was inapplicable, but still entered "⚠️ AT RISK — LOW severity" in the structured output. The diagnostic reasoning was correct; the conclusion was wrong. The model understood the situation and still couldn't bring itself to output "no risk."</div>
+    </div>
+
+    <h3>Regression — Strong Performance, One Driver Inversion</h3>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">RG-001</span>
+        <span class="test-desc">Obvious primary victim; second order on same downed machine is easy to miss</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly flagged both PO-7788 (machine, high) and PO-3311 (machine, medium) for their LT-09 dependency. Correctly exempted PO-9944 (GRD-07, unaffected). The secondary order flag was not a guess — the model traced the repair window against PO-3311's 14:00 scheduled start and identified the risk precisely.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">RG-002</span>
+        <span class="test-desc">Obvious inventory risk; hidden workforce gap on the next operation</span>
+        <span class="pill pill-green">1.0 Pass</span>
+      </div>
+      <div class="judge-note">Correctly identified both the F-501 inventory shortfall (primary, Op 40) and the ISO-PREC-ASSEMBLY workforce gap (secondary, Op 50) for PO-2244. Notably, the model recognized that the workforce gap is compounding — even if the inventory were resolved, Op 50 would still fail due to zero certified operators on Shift 2.</div>
+    </div>
+
+    <div class="test-result">
+      <div class="test-result-header">
+        <span class="test-id">RG-003</span>
+        <span class="test-desc">Obvious workforce gap; machine degradation is a silent compounding factor</span>
+        <span class="pill pill-yellow">0.5 Partial</span>
+      </div>
+      <div class="judge-note"><strong>Failure mode: primary/secondary driver inversion.</strong> Correctly flagged PO-6634 as high severity and identified both the workforce staffing gap (2/4 operators) and CNC-05's declining OEE (66%, down from 79%). However, listed machine as the primary driver and workforce as secondary — the inversion of the expected attribution. The workforce gap is the more constraining factor: even at full staffing, the machine OEE alone might still permit recovery; the staffing gap does not permit any form of pace recovery.</div>
+    </div>
+  </section>
+
+  <!-- ── 8. ROOT CAUSE ANALYSIS ── -->
+  <section>
+    <div class="section-num">Section 08</div>
+    <h2>Root Cause Analysis</h2>
+    <p class="lead">Run 1 reveals two distinct failure patterns. They have different root causes and require different fixes. Conflating them will produce a prompt change that partially addresses one and worsens the other.</p>
+
+    <h3>Pattern 1: Compulsion to Flag When Alerts Are Present</h3>
+    <p>Both adversarial failures share a common mechanism: the model encountered a genuinely alarming signal in the snapshot, correctly reasoned that it was irrelevant to active orders — and then flagged something anyway.</p>
+    <p>In <strong>AV-001</strong>, the model correctly identified CNC-12's telemetry anomalies as not affecting current orders. It then fabricated a different machine risk (LATHE-01 schedule tightness) to justify flagging PO-3388 — a risk that was not present in the data. In <strong>AV-003</strong>, the model correctly explained in its rationale that the Shift 3 coating alert was inapplicable to PO-4455 because Op 30 was already complete. It then entered "AT RISK — LOW severity" in the structured output field regardless.</p>
+    <p>This suggests the model has an implicit prior that a snapshot containing alert-level signals should produce at least one at-risk flag. When it cannot find a legitimate target, it manufactures one. This is not a reasoning failure — the model's reasoning in both cases was largely correct. It is a <strong>conclusion-anchoring failure</strong>: the structured output format creates pressure to produce a risk flag, and the model satisfies that pressure even when its own analysis contradicts it.</p>
+
+    <h3>Pattern 2: Severity Defaults to HIGH Under Any Alert Condition</h3>
+    <p>Three of four edge case partial-credit results share the same failure mode: the model assigned HIGH severity when the correct answer was MEDIUM or LOW. This occurred on EC-001 (two degraded signals with recovery options), EC-002 (machine down with ~12 hours of float), and EC-004 (workforce gap with a reallocation option).</p>
+    <p>The model's severity logic appears to be: <em>if a risk driver is present and the order will require intervention, severity is HIGH</em>. It does not discount severity for available buffer, viable recovery paths, or the difference between "intervention required" and "intervention required immediately or the order is already lost." This is a <strong>severity calibration failure</strong> — the model is using a binary risk-present/risk-absent frame where the rubric requires a three-tier frame (high/medium/low) based on time pressure and recovery optionality.</p>
+
+    <h3>Pattern 3: Machine Signal Dominance in Multi-Driver Cases</h3>
+    <p>RG-003 reveals a subtler pattern: when both machine and workforce signals are present, the model weights machine OEE degradation as the primary driver even when the workforce gap is the more constraining factor. This may reflect training data patterns in which machine signals are more commonly the primary driver, or a structural bias toward the first well-quantified signal encountered in the input. This pattern needs one more data point before it is classified as systematic.</p>
+
+    <h3>What the Pattern Does Not Show</h3>
+    <p>The model's reasoning on legitimate risk cases is strong. It correctly performs OEE-to-throughput arithmetic (HP-005), identifies reject-rate-driven inventory risk (EC-003), traces machine dependencies across multiple queued orders (RG-001), and catches hidden workforce gaps on downstream operations (RG-002). The core risk identification capability is present and working. The failures are concentrated in relevance filtering and output calibration — both addressable in the prompt layer without model retraining.</p>
+  </section>
+
+  <!-- ── 9. RECOMMENDED ACTIONS ── -->
+  <section>
+    <div class="section-num">Section 09</div>
+    <h2>Recommended Actions Before Launch</h2>
+    <p class="lead">Three changes to the system prompt, one output validation layer, and one re-eval requirement. In this sequence.</p>
+
+    <ul class="action-list">
+      <li>
+        <div class="action-num">1</div>
+        <div>
+          <strong>Add explicit relevance-filtering instructions to the system prompt.</strong><br>
+          The current system prompt says "respond only based on data present in the snapshot" and "do not flag orders for risk drivers that do not apply to their remaining operations." AV-001 and AV-003 show this is insufficient — the model understands the constraint but overrides it under alert pressure. Add a positive instruction: <em>"If your analysis concludes that no active orders are currently at risk, output exactly that conclusion. A snapshot containing alerts does not require at-risk order flags. A correct response of 'no orders currently at risk' is as valid as any risk flag."</em> This directly addresses the conclusion-anchoring failure without adding broad constraints that might suppress legitimate flags.
+        </div>
+      </li>
+      <li>
+        <div class="action-num">2</div>
+        <div>
+          <strong>Add a completion-status check instruction.</strong><br>
+          AV-003's specific failure — applying a workforce alert to an already-completed operation — requires an explicit instruction. Add: <em>"Before attributing a risk driver to an order, verify that the flagged condition applies to an operation that has not yet been completed. If the relevant operation's status is COMPLETE, the associated risk driver does not apply to this order."</em> This is a mechanical check that the model can execute reliably if it is explicitly required to do it.
+        </div>
+      </li>
+      <li>
+        <div class="action-num">3</div>
+        <div>
+          <strong>Add severity calibration guidance with explicit buffer thresholds.</strong><br>
+          Replace the current single-sentence severity definitions with a structured rubric: <em>"HIGH: the order will miss its due date without immediate intervention and no viable recovery path exists within the current snapshot. MEDIUM: the order is in jeopardy but has at least one recovery option (buffer time, alternate machine, reallocation) that, if executed promptly, could preserve the due date. LOW: the order faces a risk condition but has substantial time buffer (&gt; 4 hours of float beyond worst-case resolution time)."</em> The current definitions use "immediate intervention" for high without defining what makes intervention immediate. The 4-hour float threshold for LOW gives the model a quantitative anchor.
+        </div>
+      </li>
+      <li>
+        <div class="action-num">4</div>
+        <div>
+          <strong>Add an output validation layer to the harness before the judge evaluates.</strong><br>
+          AV-003's failure was detectable without an LLM judge: the model's rationale explicitly stated the workforce alert was inapplicable, but the structured output said "AT RISK." A pre-judge validation step that checks for internal consistency — does the rationale contradict the risk status field? — would catch this class of failure deterministically. Implement this as a regex + rule check on the model response before judge scoring. Flag cases where the rationale contains "already complete," "not applicable," or "does not affect" but the output contains an at-risk designation.
+        </div>
+      </li>
+      <li>
+        <div class="action-num">5</div>
+        <div>
+          <strong>Re-run the full 15-case eval after prompt changes before any production pilot.</strong><br>
+          Prompt changes that fix adversarial failures can suppress legitimate risk detection if not validated. The happy path and regression categories are the canary: if their scores drop after prompt changes, the changes are over-constraining the model's risk-detection behavior. A re-run is required, not optional. Do not pilot in production with an updated prompt that has not been verified against the full test suite.
+        </div>
+      </li>
+    </ul>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">What Not to Do</div>
+      Do not add a blanket instruction to "only flag orders with machine, inventory, or workforce data directly assigned to them." This would prevent the model from performing the multi-order, multi-machine dependency tracing that makes RG-001 a pass. The model needs to be more selective about <em>when</em> it flags, not less capable of cross-order reasoning. The fix is targeted at the conclusion layer, not the reasoning layer.
+    </div>
+  </section>
+
+  <!-- ── 10. NEXT EVAL RUN CRITERIA ── -->
+  <section>
+    <div class="section-num">Section 10</div>
+    <h2>Next Eval Run Criteria</h2>
+    <p class="lead">Run 2 must meet all of the following before launch authorization is granted. Partial improvements are noted but do not constitute approval.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Run 1 Score</th>
+            <th>Run 2 Target</th>
+            <th>Non-Negotiable?</th>
+            <th>Acceptable Path to Pass</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Happy Path</strong></td>
+            <td><span class="pill pill-green">5/5 (100%)</span></td>
+            <td>5/5 (100%)</td>
+            <td>Yes</td>
+            <td>Must maintain. Any regression here signals that the prompt changes have over-constrained the model.</td>
+          </tr>
+          <tr>
+            <td><strong>Edge Cases</strong></td>
+            <td><span class="pill pill-yellow">2.5/4 (63%)</span></td>
+            <td>≥ 3.0/4 (75%)</td>
+            <td>Yes</td>
+            <td>Severity calibration changes should push EC-002 and at least one of EC-001/EC-004 to full credit. EC-001 and EC-003 are the most accessible targets.</td>
+          </tr>
+          <tr>
+            <td><strong>Adversarial</strong></td>
+            <td><span class="pill pill-red">1/3 (33%)</span></td>
+            <td>3/3 (100%)</td>
+            <td>Yes — blocking</td>
+            <td>AV-001 and AV-003 must both pass. AV-002 is already passing. No partial credit accepted on this category.</td>
+          </tr>
+          <tr>
+            <td><strong>Regression</strong></td>
+            <td><span class="pill pill-yellow">2.5/3 (83%)</span></td>
+            <td>≥ 2.5/3 (83%)</td>
+            <td>No</td>
+            <td>Must not regress. RG-003 (driver inversion) is a stretch goal for Run 2 — acceptable if it remains a 0.5 partial. Would become blocking if it drops to 0.0.</td>
+          </tr>
+          <tr>
+            <td><strong>Overall</strong></td>
+            <td><span class="pill pill-red">11.0/15 (73%)</span></td>
+            <td>≥ 13.0/15 (87%)</td>
+            <td>Yes</td>
+            <td>Achieving adversarial 3/3 and edge case ≥ 3.0/4 while maintaining happy path and regression gets to 13.5+/15, which clears the threshold.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Run 2 Preconditions</h3>
+    <ul>
+      <li>All three prompt changes from Section 9 (relevance filtering, completion-status check, severity calibration) must be incorporated before Run 2 is executed.</li>
+      <li>The output validation layer (Section 9, Action 4) must be implemented in the harness before Run 2 results are reviewed.</li>
+      <li>Run 2 must use the same 15 test cases with no modifications. If new test cases are added, they are additive — they do not replace existing cases, and scoring is computed separately so comparability to Run 1 is preserved.</li>
+      <li>If Run 2 passes all thresholds, a limited production pilot (one production line, one shift, read-only alert surface — no automated actions) is authorized. Full production deployment requires pilot results showing &lt; 5% false positive rate over a minimum of 2 weeks of operational data.</li>
+    </ul>
+
+    <div class="callout callout-green">
+      <div class="callout-title">Path to Launch</div>
+      The model's core capability is intact. Happy path is perfect. Regression is strong. The failures are concentrated in a specific, well-understood failure mode — the compulsion to produce a risk flag when alert signals are present. This is fixable in the prompt layer. If the recommended changes address the root cause correctly, Run 2 can pass all thresholds and authorize the pilot. The timeline is engineering's to set; the readiness criteria are now defined.
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <div class="doc-footer">
+    <div>DXM Vision Manufacturing AI — PM Eval Spec v1.0</div>
+    <div>Shravan Sudhakaran &nbsp;|&nbsp; 2026-05-20</div>
+    <div>Model: claude-sonnet-4-6 &nbsp;|&nbsp; Harness: dxm_eval_harness.py</div>
+  </div>
+
+</div>
+</body>
+</html>
